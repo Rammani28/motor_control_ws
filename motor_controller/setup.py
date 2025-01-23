@@ -20,7 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'blink_led_jj = motor_controller.blink_node:main'
+            'blink_led_jj = motor_controller.blink_node:main',
+            'led_control_jj = motor_controller.led_controller:main',
+            'led_subscriber_jj = motor_controller.Led_controller_follower:main'
         ],
     },
 )
