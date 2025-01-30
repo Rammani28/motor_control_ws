@@ -21,9 +21,10 @@ setup(
     entry_points={
         'console_scripts': [
             'blink_led_jj = motor_controller.blink_node:main',
-            'led_control_jj = motor_controller.led_controller:main',
-            'led_subscriber_jj = motor_controller.Led_controller_follower:main',
-            'pwm_subscriber = motor_controller.motor_pwm_follower:main'
+            'bot_direction_publisher = motor_controller.bot_direction_publisher:main',
+            'bot_direction_subscriber = motor_controller.bot_direction_subscriber:main',
+            # 'pwm_subscriber = motor_controller.motor_pwm_follower:main'
+            'on_off_publisher = motor_controller.led_controller:main'
         ],
     },
 )
