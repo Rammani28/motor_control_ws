@@ -3,15 +3,20 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import RPi.GPIO as GPIO  # https://pypi.org/project/RPi.GPIO/
 from math import sin, cos
+import serial
+
+ser = serial.Serial("/dev/serial0", baudrate=115200, timeout=1)
+
 
 class PwmSubscriberNode(Node):
     def __init__(self):
         super().__init__('bot_direction_subscriber') # name of node
         print("subscriber initialized")
-        self.subscription = self.create_subscription(msg_type=String, topic='/bot_direction', callback=self.listener_callback, qos_profile=10) # subscribe topic /led_control using String type, queue size is 10
-        # self.led_pin = 23 #BCM numbering      
-        self.in1 = 12 # physical pin 32 
-        self.in2 = 13 #physical pin 33 
+        self.subscription = self.create_subscription(msg_type=String, topic='/bot_direction', callback=self.listener_callback, qos_profile=10) # subscribe topic /led_control using String type, queue size is 10  
+        # self.in1 = 12 # physical pin 32 
+        # self.in2 = 13 #physical pin 33 
+        self.in1 = 5 # physical pin 
+        self.in2 = 6 #physical pin  
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.in1, GPIO.OUT)
@@ -19,8 +24,8 @@ class PwmSubscriberNode(Node):
         # GPIO.setup(self.led_pin, GPIO.OUT)
 
         # Initialize hardware PWM for motor 1
-        self.pwm_in1 = GPIO.PWM(self.in1, 1000)  # PWM on GPIO 18, frequency=1kHz
-        self.pwm_in2 = GPIO.PWM(self.in2, 1000)  # PWM on GPIO 19, frequency=1kHz
+        self.pwm_in1 = GPIO.PWM(self.in1, 2000)  # PWM on GPIO 18, frequency=1kHz
+        self.pwm_in2 = GPIO.PWM(self.in2, 2000)  # PWM on GPIO 19, frequency=1kHz
 
 
         # Start PWM with 0% duty cycle (off)
@@ -39,7 +44,11 @@ class PwmSubscriberNode(Node):
     def listener_callback(self, msg):
         self.get_logger().info(f"Received: {msg.data}")
 
-        theta = msg.data # wbz
+        rpm_from_pico = ser.readline().decode().strip()  # Read and decode
+        if data:
+            self.get_logger().info(f"received rpm from pico: {data}")
+
+        theta = float(msg.data) # wbz
         r = 5 # TODO: changel latercm
         d = 15 # TODO: changel later
         v = 200 # say 200 rpm constant 
@@ -48,18 +57,19 @@ class PwmSubscriberNode(Node):
         u1, u2, u3 = self.required_motor_rpm(r, d, theta, vbx, vby) # target rpm or say target pwm
 
         # Convert u1, u2, u3 from rpm to pwm duty cycle
-        self.pwm_in1.ChangeDutyCycle(u1/200 * 100) # 200 is max rpm, map to 100% duty cycle
-        self.pwm_in2.ChangeDutyCycle(u1/2) #
+        # self.pwm_in1.ChangeDutyCycle(u1/200 * 100) # 200 is max rpm, map to 100% duty cycle
+        # self.pwm_in2.ChangeDutyCycle(u1/2) #
 
         # move motors based on the angle received from joystick
+        pwm_value = 20
         if theta != 501:  # 501 means no cmd from joystick
-            if u1 > 0:
-                self.pwm_in1.ChangeDutyCycle(100)  # 100% duty cycle on in1 or forward pin
+            if theta > 0 and theta < 180:
+                self.pwm_in1.ChangeDutyCycle(pwm_value)  # 100% duty cycle on in1 or forward pin
                 self.pwm_in2.ChangeDutyCycle(0)   # Turn off reverse pin
                 self.get_logger().info("motor rotating forward")
-            elif u1 < 0:
+            elif theta  >= 180 and theta < 360:
                 self.pwm_in1.ChangeDutyCycle(0) # turn off forward pin
-                self.pwm_in2.ChangeDutyCycle(100)   #turn on reverse pin
+                self.pwm_in2.ChangeDutyCycle(pwm_value)   #turn on reverse pin
                 self.get_logger().info("motor rotating forward")
             
 
