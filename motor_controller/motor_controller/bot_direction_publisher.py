@@ -25,7 +25,7 @@ class BotDirectionPublisher(Node):
             angle += 360
         # if int(l_axes_horizontal) == 0:
         #     angle = 501
-        self.publish_message(f"direction: {angle:.2f} degrees") # angle will be from 0 to 360, or 501
+        self.publish_message(f"{angle:.2f}") # angle will be from 0 to 360, or 501
 
     def publish_message(self, msg):
         message = String()
