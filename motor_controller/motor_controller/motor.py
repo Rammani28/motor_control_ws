@@ -35,21 +35,31 @@ class Motor:
         self.direction = 1
         self.pid_controller = PIDController()
 
+    def stop(self):
+        self.pwm_in1.ChangeDutyCycle(0)
+        self.pwm_in2.ChangeDutyCycle(0)
+
     def rotate_forward(self, pwm_value):
+        print("rotating forward ...\n")
         self.pwm_in1.ChangeDutyCycle(pwm_value)
         self.pwm_in2.ChangeDutyCycle(0)
 
     def rotate_backward(self, pwm_value):
+        print("rotating backward ...\n")
         self.pwm_in1.ChangeDutyCycle(0)
         self.pwm_in2.ChangeDutyCycle(pwm_value)
     
-    def rotate(self, curr_pwm, target_pwm):
-        if int(target_pwm) > 1: 
-            pwm = self.pid_controller.compute(abs(target_pwm), curr_pwm)
-            if target_pwm<0:
-                self.rotate_backward(abs(pwm))
-            else:
-                self.rotate_forward(pwm)
+    def rotate(self, rpm_n, u_n):
+        print("rotating", end='')
+        pwm = self.pid_controller.compute(abs(u_n), rpm_n)
+        if pwm < 12: # case for small spike
+            pwm += 12
+        if u_n<0:
+            self.rotate_backward(pwm)
+        else:
+            self.rotate_forward(abs(pwm))
+        print(f"target_pwm={u_n}")
+        print(f"curr_pwm={rpm_n}")
 
     def destroy(self):
         self.pwm_in1.stop()
