@@ -24,31 +24,21 @@ class PwmSubscriberNode(Node):
         theta = float(msg.data) # wbz
 
         if theta != 501:
-            rpm_from_pico = ser.readline().decode().strip()  # Read and decode
-            print(rpm_from_pico)
-            if rpm_from_pico:
-                self.get_logger().info(f"received rpm from pico: {rpm_from_pico}")
+            rpms_pico = ser.readline().decode().strip()  # Read and decode
+            rpm_vec = [int(rpm/2) for rpm in rpms_pico.split(',')] #is in pwm value 
+
+            print(rpms_pico)
+            # if rpms_pico:
+            #     self.get_logger().info(f"received rpm from pico: {rpms_pico}")
 
             # joystick angle converted to rpm pwm for each wheel
-            u1, u2, u3 = target_wheel_rpm(theta, 0) # -100 to 100 for 
+            u1, u2, u3 = target_wheel_rpm(theta, 0) # -100 to 100 for comparable pwm
+            rpm1, rpm2, rpm3 = rpm_vec
+            
+            self.motor1.rotate(rpm1, u1)
 
-
-            if u1 > 0:
-                self.motor1.rotate_clockwise(u1)
-            else: 
-                self.motor1.rotate_anticlockwise(u1)
-
-            # if u2 > 0:
-            #     self.motor2.rotate_clockwise(u2)
-            # else: 
-            #     self.motor2.rotate_anticlockwise(u2)
-            # if u3 > 0:
-            #     self.motor3.rotate_clockwise(u3)
-            # else: 
-            #     self.motor3.rotate_anticlockwise(u3)
-
-
-    def __del__(self):  # destructor for LedSubscriberNode class, dk why
+     
+    def __del__(self):  # destructor for motor class, why here?
         self.pwm_in1.stop()
         self.pwm_in2.stop()
         GPIO.cleanup()
