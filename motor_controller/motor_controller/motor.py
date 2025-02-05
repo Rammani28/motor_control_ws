@@ -35,23 +35,23 @@ class Motor:
         self.direction = 1
         self.pid_controller = PIDController()
 
-    def rotate_forward(self, pwm_value:int):
+    def rotate_forward(self, pwm_value):
         self.pwm_in1.ChangeDutyCycle(pwm_value)
         self.pwm_in2.ChangeDutyCycle(0)
 
-    def rotate_backward(self, pwm_value:int):
+    def rotate_backward(self, pwm_value):
         self.pwm_in1.ChangeDutyCycle(0)
         self.pwm_in2.ChangeDutyCycle(pwm_value)
     
     def rotate(self, curr_pwm, target_pwm):
-        if int(target_pwm) != 0:
+        if int(target_pwm) > 1: 
             pwm = self.pid_controller.compute(abs(target_pwm), curr_pwm)
             if target_pwm<0:
                 self.rotate_backward(abs(pwm))
             else:
                 self.rotate_forward(pwm)
 
-    def __del__(self):
+    def destroy(self):
         self.pwm_in1.stop()
         self.pwm_in2.stop()
         GPIO.cleanup()
