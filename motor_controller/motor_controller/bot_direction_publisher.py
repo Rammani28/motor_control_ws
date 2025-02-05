@@ -12,20 +12,21 @@ class BotDirectionPublisher(Node):
         self.get_logger().info("LED publisher Node initialized. listening to joystick input...")
 
     def joy_callback(self, msg):
-        l_axes_horizontal = 0 # index for left stick horizontal axis
-        l_axes_vertical = 1   # index for left stick vertical axis
-
-        x = msg.axes[l_axes_horizontal] * -1 # multiplied by -1 to make right as +ve and left as -ve(for convience)
-        y = msg.axes[l_axes_vertical] # -1 is down, +1 is top
-
+        """0, 1, 3 are the index of joy sticks in message published by /joy"""
+        strafe_x = msg.axes[0] * -1 # multiplied by -1 to make right as +ve and left as -ve(for convience)
+        strafe_y = msg.axes[1] # -1 is down, +1 is top, strafe means to move sideways
+        rotational_omega = msg.axes[3] * -1 # this is omega bZ or wbz, multiplied by -1 to make right as +ve and left as -ve
+        wbz = rotational_omega
         # Calculate the angle in degrees
         # atan2 works fine instead of manually setting angle
-        angle = math.degrees(math.atan2(y, x)) # atan2 returns angle in radians, convert to degrees
+        angle = math.degrees(math.atan2(strafe_y, strafe_x)) # atan2 returns angle in radians, convert to degrees
         if angle < 0:
             angle += 360
-        # if int(l_axes_horizontal) == 0:
-        #     angle = 501
-        self.publish_message(f"{angle:.2f}") # angle will be from 0 to 360, or 501
+
+        message_to_be_published = f"{angle:.2f},{wbz}"
+        if strafe_x == 0 and strafe_y == 0 and wbz == 0: # if all values are 0, stop the bot
+            message_to_be_published = "501"
+        self.publish_message(message_to_be_published) # angle will be from 0 to 360, or 501
 
     def publish_message(self, msg):
         message = String()

@@ -5,7 +5,7 @@ import serial
 from motor_controller.utils import target_wheel_rpm
 from motor_controller.motor import Motor
 
-ser = serial.Serial("/dev/serial0", baudrate=115200, timeout=1)
+ser = serial.Serial("/dev/serial0", baudrate=115200, timeout=0)
 
 
 class PwmSubscriberNode(Node):

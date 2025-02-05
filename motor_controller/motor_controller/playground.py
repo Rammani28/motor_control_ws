@@ -33,12 +33,8 @@
 # u1, u2, u3 = required_motor_rpm(r, d, theta, v)
 # print(f"u1={u1}, u2={u2}, u3={u3}") #u1=-25.0629280586485, u2=9.577071941363908, u3=-59.70292805863609
 
-from utils import target_wheel_rpm
 
-# u1, u2, u3 = target_wheel_rpm(0)
-# print(f"u1={u1}, u2={u2}, u3={u3}")
-for i in range(0, 361, 1):
-    u1, u2, u3 = target_wheel_rpm(i, 0)
-    print(f"angle={i:.2f}\tu1={u1:.2f},\t u2={u2:.2f},\t u3={u3:.2f}")
-    # max = max(u1, u2, u3)
-    # print(max)
+x= 0.0
+y = int(x)
+print(x == 0)
+print(y == 0)
