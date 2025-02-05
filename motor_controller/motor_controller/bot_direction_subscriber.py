@@ -1,11 +1,11 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import RPi.GPIO as GPIO  # https://pypi.org/project/RPi.GPIO/
-from math import sin, cos
+# import RPi.GPIO as GPIO  # https://pypi.org/project/RPi.GPIO/
+# from math import sin, cos
 import serial
-from utils import target_wheel_rpm, Motor
-PI = 3.14159265359
+from motor_controller.utils import target_wheel_rpm
+from motor_controller.motor import Motor
 
 ser = serial.Serial("/dev/serial0", baudrate=115200, timeout=1)
 
