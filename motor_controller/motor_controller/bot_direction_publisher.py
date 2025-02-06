@@ -13,15 +13,14 @@ class BotDirectionPublisher(Node):
 
     def joy_callback(self, msg):
         """0, 1, 3 are the index of joy sticks in message published by /joy"""
-        strafe_x = msg.axes[0] * -1 # multiplied by -1 to make right as +ve and left as -ve(for convience)
-        strafe_y = msg.axes[1] # -1 is down, +1 is top, strafe means to move sideways
-        rotational_omega = msg.axes[3] * -1 # this is omega bZ or wbz, multiplied by -1 to make right as +ve and left as -ve
+        strafe_x = msg.axes[0]  
+        strafe_y = msg.axes[1]  
+        rotational_omega = msg.axes[3] * -1  
         wbz = rotational_omega
+
         # Calculate the angle in degrees
-        # atan2 works fine instead of manually setting angle
-        angle = math.degrees(math.atan2(strafe_y, strafe_x)) # atan2 returns angle in radians, convert to degrees
-        if angle < 0:
-            angle += 360
+        angle = math.degrees(math.atan2(strafe_x, strafe_y))  # Swap arguments to adjust direction
+        angle = (360 - angle) % 360  # Normalize to 0-360
 
         message_to_be_published = f"{angle:.2f},{wbz}"
         if strafe_x == 0 and strafe_y == 0 and wbz == 0: # if all values are 0, stop the bot
