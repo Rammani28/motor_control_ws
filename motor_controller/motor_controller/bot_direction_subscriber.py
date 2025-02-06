@@ -7,12 +7,7 @@ from motor_controller.motor import Motor
 from time import sleep
 
 ser = serial.Serial("/dev/serial0", baudrate=115200, timeout=0)
-<<<<<<< HEAD
 
-=======
->>>>>>> fab159f (it had worked until here)
-
-data = {}
 class PwmSubscriberNode(Node):
     """CREATED YOUR OWN PROBLEM AND CRY"""
     def __init__(self):
