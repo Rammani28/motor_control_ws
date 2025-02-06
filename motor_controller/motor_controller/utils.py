@@ -1,7 +1,7 @@
 from math import sin, cos
 
 PI = 3.14159265359
-R = 0.06 # meters
+R = 0.029 # meters
 D = 0.15 # meters
 V = 1 # say 1 m/s
 

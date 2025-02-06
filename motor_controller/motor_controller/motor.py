@@ -12,19 +12,27 @@ class PIDController:
         self.min_output = min_output
         self.max_output = max_output
 
+        self.pid_pwm = 0
+
     def compute(self, target_pwm, current_pwm):
         self.error = target_pwm - current_pwm
         self.integral += self.error
         # derivative = error - self.last_error
         self.last_error = self.error
-        output = self.Kp * self.error + self.Ki * self.integral  # + self.Kd * derivative
-        return min(output, 100)
+        temp = self.Kp * self.error + self.Ki * self.integral # TODO remove
+        output = max(min(self.Kp * self.error + self.Ki * self.integral, 100), 0) # + self.Kd * derivative
+        # self.pid_pwm = output
+        # print(f"target:{target_pwm:.2f}")
+        # print(f"current_pwm:{current_pwm:.2f}")
+        # print(f"actual_pwm to be written:{temp:.2f}")
+        return output
 
 
 class Motor:
-    def __init__(self, in1:int=5, in2:int=6):
+    def __init__(self, in1:int=5, in2:int=6, name="motor1"):
         self.in1 = in1
         self.in2 = in2
+        self.name = name
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.in1, GPIO.OUT)
         GPIO.setup(self.in2, GPIO.OUT)
@@ -34,32 +42,50 @@ class Motor:
         self.pwm_in2.start(0)
         self.direction = 1
         self.pid_controller = PIDController()
+        self.last_rpm = 0
+        # self.current = 0
+        
 
     def stop(self):
         self.pwm_in1.ChangeDutyCycle(0)
         self.pwm_in2.ChangeDutyCycle(0)
 
-    def rotate_forward(self, pwm_value):
-        print("rotating forward ...\n")
+    def rotate_forward(self, pwm_value=0):
+        # print("rotating forward ...\n")
         self.pwm_in1.ChangeDutyCycle(pwm_value)
         self.pwm_in2.ChangeDutyCycle(0)
 
     def rotate_backward(self, pwm_value):
-        print("rotating backward ...\n")
+        # print("rotating backward ...\n")
         self.pwm_in1.ChangeDutyCycle(0)
         self.pwm_in2.ChangeDutyCycle(pwm_value)
     
-    def rotate(self, rpm_n, u_n):
-        print("rotating", end='')
-        pwm = self.pid_controller.compute(abs(u_n), rpm_n)
-        if pwm < 12: # case for small spike
-            pwm += 12
-        if u_n<0:
-            self.rotate_backward(pwm)
-        else:
-            self.rotate_forward(abs(pwm))
-        print(f"target_pwm={u_n}")
-        print(f"curr_pwm={rpm_n}")
+    def rotate(self, u_n, rpm_n):
+        # print(f"{self.name} rotating")
+        # print(f"{self.name}rpm_n got inside rotate:{rpm_n}")
+        # if rpm_n is not None:
+        #     self.last_rpm = rpm_n
+        # current = self.last_rpm if rpm_n is None else rpm_n
+        # current = rpm_n
+        target = abs(u_n)
+        pwm = self.pid_controller.compute(target, rpm_n)
+        (self.rotate_backward if u_n < 0 else self.rotate_forward)(pwm)
+        # print(f"{self.name} pwm1 written:{pwm:.2f}")
+
+        # above is same as below
+        # if rpm_n is None:
+        #     pwm = self.pid_controller.compute(abs(u_n), self.last_rpm)
+        #     if u_n<0:
+        #         self.rotate_backward(pwm)
+        #     else:
+        #         self.rotate_forward(pwm)
+        # else:
+        #     self.last_rpm = rpm_n
+        #     pwm = self.pid_controller.compute(target_pwm=abs(u_n), current_pwm=rpm_n)
+        #     if u_n<0:
+        #         self.rotate_backward(pwm)
+        #     else:
+        #         self.rotate_forward(pwm)
 
     def destroy(self):
         self.pwm_in1.stop()
